@@ -245,16 +245,26 @@ def fix_image_scale(im):
     new_im = Image.fromarray(new_background)
     return new_im
 
+# NOTE Added pil_gt
+def get_mask_u2net(args, pil_im, pil_gt):
 
-def get_mask_u2net(args, pil_im):
+    data_transforms_gt = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Resize((512, 512)),
+        transforms.Normalize(mean=(0.48145466, 0.4578275, 0.40821073), std=(
+            0.26862954, 0.26130258, 0.27577711)),
+    ])
+
     data_transforms = transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize(mean=(0.48145466, 0.4578275, 0.40821073), std=(
             0.26862954, 0.26130258, 0.27577711)),
     ])
 
-    input_im_trans = data_transforms(pil_im).unsqueeze(0).to(args.device)
-
+    # input_im_trans = data_transforms(pil_im).unsqueeze(0).to(args.device)
+    # NOTE Changed pil_im to pil_gt and data_transforms to data_transforms_gt
+    input_im_trans = data_transforms_gt(pil_gt).unsqueeze(0).to(args.device)
+    
     model_dir = os.path.join("./U2Net_/saved_models/u2net.pth")
     net = U2NET(3, 1)
     if torch.cuda.is_available() and args.use_gpu:
@@ -265,6 +275,7 @@ def get_mask_u2net(args, pil_im):
     net.eval()
     with torch.no_grad():
         d1, d2, d3, d4, d5, d6, d7 = net(input_im_trans.detach())
+
     pred = d1[:, 0, :, :]
     pred = (pred - pred.min()) / (pred.max() - pred.min())
     predict = pred
@@ -272,6 +283,7 @@ def get_mask_u2net(args, pil_im):
     predict[predict >= 0.5] = 1
     mask = torch.cat([predict, predict, predict], axis=0).permute(1, 2, 0)
     mask = mask.cpu().numpy()
+
     # predict_np = predict.clone().cpu().data.numpy()
     im = Image.fromarray((mask[:, :, 0]*255).astype(np.uint8)).convert('RGB')
     im.save(f"{args.output_dir}/mask.png")

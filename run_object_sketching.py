@@ -38,7 +38,8 @@ args = parser.parse_args()
 multiprocess = not args.colab and args.num_sketches > 1 and args.multiprocess
 abs_path = os.path.abspath(os.getcwd())
 
-target = f"{abs_path}/target_images/{args.target_file}"
+target = f"{abs_path}/target_images/cloud/{args.target_file}"
+
 assert os.path.isfile(target), f"{target} does not exists!"
 
 if not os.path.isfile(f"{abs_path}/U2Net_/saved_models/u2net.pth"):

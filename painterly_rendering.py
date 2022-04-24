@@ -38,6 +38,17 @@ def load_renderer(args, target_im=None, mask=None):
 
 
 def get_target(args):
+    
+    gt = args.target.rsplit('/', 2)[0]+ '/raw/'+ args.target.rsplit('/', 1)[1]
+    gt = Image.open(gt)
+    if gt.mode == "RGBA":
+        # Create a white rgba background
+        new_image = Image.new("RGBA", gt.size, "WHITE")
+        # Paste the image on the background.
+        new_image.paste(gt, (0, 0), gt)
+        gt = new_image
+    gt = gt.convert("RGB")
+
     target = Image.open(args.target)
     if target.mode == "RGBA":
         # Create a white rgba background
@@ -46,7 +57,8 @@ def get_target(args):
         new_image.paste(target, (0, 0), target)
         target = new_image
     target = target.convert("RGB")
-    masked_im, mask = utils.get_mask_u2net(args, target)
+    
+    masked_im, mask = utils.get_mask_u2net(args, target, gt)
     if args.mask_object:
         target = masked_im
     if args.fix_scale:
