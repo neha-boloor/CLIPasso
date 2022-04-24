@@ -39,7 +39,7 @@ def load_renderer(args, target_im=None, mask=None):
 
 def get_target(args):
     
-    gt = args.target.rsplit('/', 2)[0]+ '/raw/'+ args.target.rsplit('/', 1)[1]
+    gt = args.target.rsplit('/', 2)[0]+ '/raw_data/'+ args.target.rsplit('/', 1)[1]
     gt = Image.open(gt)
     if gt.mode == "RGBA":
         # Create a white rgba background
